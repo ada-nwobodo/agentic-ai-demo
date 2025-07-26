@@ -6,6 +6,8 @@ import datetime
 # Optional: Gemini API (mock switch for now)
 USE_GEMINI = st.sidebar.toggle("Use Gemini AI", value=False)
 
+session_state = st.session_state
+
 # Setup session state
 def init_session():
     if "stage" not in st.session_state:

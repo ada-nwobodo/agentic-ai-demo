@@ -20,7 +20,7 @@ def init_session():
 init_session()
 
 # Shortcut to current step
-    current_step = st.session_state.stage
+current_step = st.session_state.stage
 
 # Logging helper
 def log_event(stage, user_input, ai_output):

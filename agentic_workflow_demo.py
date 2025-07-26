@@ -43,28 +43,52 @@ def maybe_fail():
         return random.choice([True, False])
     return True
 
-# STAGE 1: Detect patient entry
-if st.session_state.stage == 1:
-    st.subheader("Stage 1: Patient Record Detected")
-    st.write("Agent has detected a new patient entry.")
-    if st.button("Summarise entry"):
-        user_input = "Clinician clicked to summarise"
-        ai_output = gemini_generate("Summarise this patient record entry")
-        log_event(1, user_input, ai_output)
-        st.session_state.stage += 1
+# STAGE 1: Clinician enters patient notes, agent detects input
+if current_step == 1:
+    st.subheader("Step 1: Detect Patient Record Entry")
+
+    st.markdown("A clinician begins entering patient symptoms and history into the EHR.")
+
+    # Input field for patient notes
+    patient_input = st.text_area("📝 Enter patient symptoms/history:", value=session_state.get("patient_input", ""), height=150)
+
+    # Save input in session state
+    session_state["patient_input"] = patient_input
+
+    if patient_input:
+        st.success("Agent has detected the patient record entry.")
+        if st.button("▶️ Proceed to summarization"):
+            go_to_step(2)
+    else:
+        st.info("Please enter patient symptoms/history to continue.")
 
 # STAGE 2: Extract key data
-elif st.session_state.stage == 2:
-    st.subheader("Stage 2: Data Extraction")
-    sample_entry = st.text_area("Patient Record Entry", "75 year old male with dizziness and falls...")
-    if st.button("Extract Key Data"):
-        if maybe_fail():
-            output = gemini_generate(f"Extract key clinical info from: {sample_entry}")
-            log_event(2, sample_entry, output)
-            st.session_state.inputs['summary'] = output
-            st.session_state.stage += 1
-        else:
-            st.error("Extraction failed. Please try again.")
+if current_step == 2:
+    st.subheader("Step 2: Extract Summary from Record")
+
+    patient_text = session_state.get("patient_input", "")
+
+    if not patient_text:
+        st.warning("No patient input detected. Please return to Step 1.")
+    else:
+        st.markdown("The agent will now summarize the patient’s record.")
+
+        if st.button("🧠 Summarize with Gemini"):
+            # Use Gemini or mock summary
+            with st.spinner("Summarizing..."):
+                try:
+                    summary = gemini.summarize(patient_text)  # Or mock function
+                    session_state["summary"] = summary
+                except Exception as e:
+                    st.error(f"Summarization failed: {e}")
+                    summary = "Summary unavailable due to an error."
+                    session_state["summary"] = summary
+
+        if "summary" in session_state:
+            st.success("Summary extracted:")
+            st.markdown(session_state["summary"])
+            if st.button("✅ Proceed to Step 3"):
+                go_to_step(3)
 
 # STAGE 3: Attach summary + ask about guidelines
 elif st.session_state.stage == 3:

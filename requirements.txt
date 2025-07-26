@@ -1,1 +1,6 @@
-
+streamlit
+pandas
+google-generativeai
+google-cloud-aiplatform
+langchain-google-vertexai
+langchain

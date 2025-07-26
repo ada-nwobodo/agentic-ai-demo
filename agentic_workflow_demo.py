@@ -17,10 +17,10 @@ def init_session():
     if "simulate_failure" not in st.session_state:
         st.session_state.simulate_failure = False
 
+init_session()
+
 # Shortcut to current step
     current_step = st.session_state.stage
-
-init_session()
 
 # Logging helper
 def log_event(stage, user_input, ai_output):

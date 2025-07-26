@@ -53,7 +53,7 @@ if current_step == 1:
     st.markdown("A clinician begins entering patient symptoms and history into the EHR.")
 
     # Input field for patient notes
-    patient_input = st.text_area("📝 Enter patient symptoms/history:", value=session_state.get("patient_input", ""), height=150)
+    patient_input = st.text_area("📝 Enter patient symptoms/history:", value=st.session_state.get("patient_input", ""), height=150)
 
     # Save input in session state
     session_state["patient_input"] = patient_input

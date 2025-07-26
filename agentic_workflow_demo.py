@@ -21,6 +21,9 @@ def init_session():
 
 init_session()
 
+def go_to_step(step_number):
+    st.session_state.stage = step_number
+
 # Shortcut to current step
 current_step = st.session_state.stage
 

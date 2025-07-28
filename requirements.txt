@@ -4,3 +4,6 @@ google-generativeai
 google-cloud-aiplatform
 langchain-google-vertexai
 langchain
+transformers
+torch
+accelerate

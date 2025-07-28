@@ -105,7 +105,7 @@ elif stage == 2:
     st.markdown("📑 Summary of the patient record:")
     st.info(st.session_state.inputs.get("summary", "[No summary found]"))
 
-    if st.button("Proceed to attach guideline prompt"):
+    if st.button("Proceed to attach summarisation"):
         log_to_db(2, "View summary", "Proceed to attach summarisation", completed=True)
         st.session_state.stage = 3
         st.rerun()

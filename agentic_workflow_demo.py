@@ -3,31 +3,37 @@ import random
 import time
 import datetime
 
-# Optional: Gemini API (mock switch for now)
+# Gemini API support
+import google.generativeai as genai
+
+# === Sidebar Controls ===
 USE_GEMINI = st.sidebar.toggle("Use Gemini AI", value=False)
+st.sidebar.toggle("Simulate Failures", key="simulate_failure", value=False)
 
-session_state = st.session_state
+# === Secrets Setup for Gemini ===
+if USE_GEMINI:
+    try:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        gemini = genai.GenerativeModel("gemini-pro")
+    except Exception as e:
+        st.sidebar.error(f"Gemini config error: {e}")
+        USE_GEMINI = False
 
-# Setup session state
+# === Session State Init ===
 def init_session():
-    if "stage" not in st.session_state:
-        st.session_state.stage = 1
-    if "log" not in st.session_state:
-        st.session_state.log = []
-    if "inputs" not in st.session_state:
-        st.session_state.inputs = {}
-    if "simulate_failure" not in st.session_state:
-        st.session_state.simulate_failure = False
+    for key, default in {
+        "stage": 1,
+        "log": [],
+        "inputs": {},
+        "patient_input": "",
+    }.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
 
 init_session()
-
-def go_to_step(step_number):
-    st.session_state.stage = step_number
-
-# Shortcut to current step
 current_step = st.session_state.stage
 
-# Logging helper
+# === Helper: Logging Function ===
 def log_event(stage, user_input, ai_output):
     st.session_state.log.append({
         "timestamp": datetime.datetime.now().isoformat(),
@@ -36,124 +42,123 @@ def log_event(stage, user_input, ai_output):
         "ai_output": ai_output
     })
 
-# Mock Gemini API call
+# === Helper: Gemini API Call or Mock ===
 def gemini_generate(prompt):
     if not USE_GEMINI:
         return f"[Mock] Response for: {prompt}"
-    # Replace this with real Gemini call if enabled
-    time.sleep(1)  # simulate latency
-    return f"[Gemini] Simulated intelligent response for: {prompt}"
 
-# Simulate possible failure
+    try:
+        response = gemini.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"[Gemini Error] {e}"
 
+# === Helper: Failure Simulation ===
 def maybe_fail():
     if st.session_state.simulate_failure:
         return random.choice([True, False])
     return True
 
-# STAGE 1: Clinician enters patient notes, agent detects input
+# === Helper: Step Navigation ===
+def go_to_step(step_number):
+    st.session_state.stage = step_number
+    st.rerun()
+
+# === STAGE 1: Clinician enters patient notes ===
 if current_step == 1:
     st.subheader("Step 1: Detect Patient Record Entry")
+    st.markdown("A clinician begins entering patient symptoms and history:")
 
-    st.markdown("A clinician begins entering patient symptoms and history into the EHR.")
+    patient_input = st.text_area("📝 Enter patient symptoms/history:",
+                                 value=st.session_state.patient_input,
+                                 height=150)
+    st.session_state.patient_input = patient_input
 
-    # Input field for patient notes
-    patient_input = st.text_area("📝 Enter patient symptoms/history:", value=st.session_state.get("patient_input", ""), height=150)
-
-    # Save input in session state
-    session_state["patient_input"] = patient_input
-
-    if patient_input:
-        st.success("Agent has detected the patient record entry.")
-        if st.button("▶️ Proceed to summarization"):
-            go_to_step(2)
-    else:
-        st.info("Please enter patient symptoms/history to continue.")
-
-# STAGE 2: Extract key data
-if current_step == 2:
-    st.subheader("Step 2: Extract Summary from Record")
-
-    patient_text = session_state.get("patient_input", "")
-
-    if not patient_text:
-        st.warning("No patient input detected. Please return to Step 1.")
-    else:
-        st.markdown("The agent will now summarize the patient’s record.")
-
-        if st.button("🧠 Summarize with Gemini"):
-            # Use Gemini or mock summary
-            with st.spinner("Summarizing..."):
-                try:
-                    summary = gemini.summarize(patient_text)  # Or mock function
-                    session_state["summary"] = summary
-                except Exception as e:
-                    st.error(f"Summarization failed: {e}")
-                    summary = "Summary unavailable due to an error."
-                    session_state["summary"] = summary
-
-        if "summary" in session_state:
-            st.success("Summary extracted:")
-            st.markdown(session_state["summary"])
-            if st.button("✅ Proceed to Step 3"):
-                go_to_step(3)
-
-# STAGE 3: Attach summary + ask about guidelines
-elif st.session_state.stage == 3:
-    st.subheader("Stage 3: Summary + Guideline Prompt")
-    st.write("Attached Summary:")
-    st.info(st.session_state.inputs.get('summary', '[No summary found]'))
-    if st.button("Attach Guidelines to Record"):
-        log_event(3, "Clinician permitted guidelines attach", "Proceeding to fetch guidelines")
-        st.session_state.stage += 1
-
-# STAGE 4: Retrieve guidelines
-elif st.session_state.stage == 4:
-    st.subheader("Stage 4: Retrieve National Guidelines")
-    if st.button("Retrieve Guidelines"):
-        if maybe_fail():
-            output = gemini_generate("Retrieve national guidelines for dizziness in elderly")
-            log_event(4, "Clinician requested guidelines", output)
-            st.session_state.inputs['guidelines'] = output
-            st.session_state.stage += 1
+    if st.button("➡️ Proceed to Summarization"):
+        if not patient_input.strip():
+            st.warning("Please enter some patient notes.")
         else:
-            st.error("Failed to retrieve guidelines.")
+            go_to_step(2)
 
-# STAGE 5: Attach + Submit
-elif st.session_state.stage == 5:
-    st.subheader("Stage 5: Attach Guidelines + Submit")
-    st.write("Summary:")
-    st.info(st.session_state.inputs.get('summary', '...'))
-    st.write("Guidelines:")
-    st.success(st.session_state.inputs.get('guidelines', '...'))
-    if st.button("Submit for Imaging Request"):
-        log_event(5, "Clinician confirmed submission", "Packaging structured request")
-        st.session_state.stage += 1
+# === STAGE 2: Agent summarizes input ===
+elif current_step == 2:
+    st.subheader("Step 2: Summarize Patient Record")
 
-# STAGE 6: Final structured output
-elif st.session_state.stage == 6:
-    st.subheader("Stage 6: Final Submission Output")
-    summary = st.session_state.inputs.get('summary', '...')
-    guidelines = st.session_state.inputs.get('guidelines', '...')
-    final_output = {
-        "summary": summary,
-        "guidelines": guidelines,
-        "codes": ["SNOMED: 123456", "ICD10: R42"]
-    }
-    st.json(final_output)
-    log_event(6, "Final review", str(final_output))
-    st.success("Workflow complete!")
+    prompt = f"Summarize the following patient entry for clarity:\n\n{st.session_state.patient_input}"
+    summary = gemini_generate(prompt)
 
-    if st.button("Restart Simulation"):
-        for key in ["stage", "log", "inputs"]:
-            st.session_state.pop(key, None)
-        st.rerun()
+    st.success("🧠 AI Summary:")
+    st.markdown(summary)
 
-# Sidebar controls
-with st.sidebar:
-    st.markdown("## Simulation Controls")
-    st.session_state.simulate_failure = st.checkbox("Simulate Random Failures", value=False)
+    log_event(2, st.session_state.patient_input, summary)
+
+    if st.button("✅ Approve Summary and Continue"):
+        st.session_state.inputs["summary"] = summary
+        go_to_step(3)
+
+# === STAGE 3: Ask to attach guidelines ===
+elif current_step == 3:
+    st.subheader("Step 3: Attach Guidelines")
+    st.markdown("Agent asks: _'Would you like to attach relevant imaging guidelines to this record?'_")
+
+    if st.button("📎 Yes, attach guidelines"):
+        go_to_step(4)
+
+# === STAGE 4: Retrieve guidelines ===
+elif current_step == 4:
+    st.subheader("Step 4: Retrieve Imaging Guidelines")
+
+    prompt = f"What are the national imaging guidelines for: {st.session_state.patient_input}"
+    guidelines = gemini_generate(prompt)
+
+    st.success("📖 Guidelines Retrieved:")
+    st.markdown(guidelines)
+
+    log_event(4, st.session_state.inputs["summary"], guidelines)
+    st.session_state.inputs["guidelines"] = guidelines
+
+    if st.button("✅ Approve and Continue"):
+        go_to_step(5)
+
+# === STAGE 5: Prepare submission ===
+elif current_step == 5:
+    st.subheader("Step 5: Prepare Submission")
+
+    st.markdown("Agent will now prepare structured submission with summary, guidelines, and coding.")
+
+    if maybe_fail():
+        submission = f"""
+        ✅ Submission Preview:
+
+        - **Summary**: {st.session_state.inputs['summary']}
+        - **Guidelines**: {st.session_state.inputs['guidelines']}
+        - **Code**: SNOMED-CT: 12345678
+        """
+        st.success(submission)
+        st.session_state.inputs["submission"] = submission
+        log_event(5, None, submission)
+
+        if st.button("📤 Submit to Imaging System"):
+            go_to_step(6)
+    else:
+        st.error("❌ Submission failed. Please retry or adjust input.")
+        if st.button("🔄 Retry"):
+            st.rerun()
+
+# === STAGE 6: Completion ===
+elif current_step == 6:
+    st.balloons()
+    st.success("🎉 Submission complete! Thank you.")
+
     st.markdown("---")
-    if st.button("Show Event Log"):
-        st.write(st.session_state.log)
+    st.subheader("📊 Interaction Log")
+    for log in st.session_state.log:
+        st.markdown(f"- `{log['timestamp']}` | **Stage {log['stage']}** | Input: _{log['user_input']}_, Output: _{log['ai_output']}_")
 
+
+# === Reset Demo ===
+st.sidebar.markdown("---")
+if st.sidebar.button("🔁 Restart Demo"):
+    for key in st.session_state.keys():
+        del st.session_state[key]
+    st.experimental_rerun()

@@ -94,7 +94,7 @@ if stage == 1:
         else:
             summary = generate_response(f"summarize: {patient_input}")
             st.session_state.inputs["summary"] = summary
-            log_to_db(1, patient_input, summary)
+            log_to_db(1, patient_input, summary, completed=True)
             st.success("Patient note detected and summarized.")
             st.session_state.stage = 2
             st.rerun()
@@ -106,7 +106,7 @@ elif stage == 2:
     st.info(st.session_state.inputs.get("summary", "[No summary found]"))
 
     if st.button("Proceed to attach guideline prompt"):
-        log_to_db(2, "View summary", "Proceeding to guideline prompt")
+        log_to_db(2, "View summary", "Proceeding to guideline prompt", completed=True)
         st.session_state.stage = 3
         st.rerun()
 
@@ -116,12 +116,12 @@ elif stage == 3:
     st.markdown("📌 Would you like the agent to fetch relevant imaging guidelines?")
 
     if st.button("Yes, fetch guidelines"):
-        log_to_db(3, "Yes", "User opted to fetch guidelines")
+        log_to_db(3, "Yes", "User opted to fetch guidelines", completed=True)
         st.session_state.stage = 4
         st.rerun()
 
     if st.button("No, stop here"):
-        log_to_db(3, "No", "User stopped at stage 3", completed=True)
+        log_to_db(3, "No", "User stopped at stage 3", completed=False)
         st.warning("Workflow ended.")
         st.stop()
 
@@ -133,7 +133,7 @@ elif stage == 4:
     if success:
         guidelines = generate_response("Provide imaging guidelines based on patient symptoms.")
         st.session_state.inputs["guidelines"] = guidelines
-        log_to_db(4, "Request imaging guidelines", guidelines)
+        log_to_db(4, "Request imaging guidelines", guidelines, completed=True)
         st.success("Guidelines retrieved.")
         st.session_state.stage = 5
         st.rerun()
@@ -143,7 +143,7 @@ elif stage == 4:
             log_to_db(4, "Retry", "Retry guideline fetch")
             st.rerun()
         if st.button("Stop workflow"):
-            log_to_db(4, "Stop", "User stopped after failure", completed=True)
+            log_to_db(4, "Stop", "User stopped after failure", completed=False)
             st.stop()
 
 # STAGE 5: Attach & Submit?
@@ -152,7 +152,7 @@ elif stage == 5:
     st.markdown("📎 Ready to submit this case with AI-generated documentation.")
 
     if st.button("Submit Case"):
-        log_to_db(5, "Submit", "User submitted the case")
+        log_to_db(5, "Submit", "User submitted the case", completed=True)
         st.session_state.stage = 6
         st.rerun()
 

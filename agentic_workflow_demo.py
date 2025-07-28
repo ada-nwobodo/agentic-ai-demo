@@ -14,7 +14,7 @@ st.sidebar.toggle("Simulate Failures", key="simulate_failure", value=False)
 if USE_GEMINI:
     try:
         genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        gemini = genai.GenerativeModel("gemini-pro")
+        gemini = genai.GenerativeModel("gemini-2.0")
     except Exception as e:
         st.sidebar.error(f"Gemini config error: {e}")
         USE_GEMINI = False

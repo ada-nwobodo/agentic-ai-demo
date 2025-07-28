@@ -106,7 +106,7 @@ elif stage == 2:
     st.info(st.session_state.inputs.get("summary", "[No summary found]"))
 
     if st.button("Proceed to attach guideline prompt"):
-        log_to_db(2, "View summary", "Proceeding to guideline prompt", completed=True)
+        log_to_db(2, "View summary", "Proceed to attach summarisation", completed=True)
         st.session_state.stage = 3
         st.rerun()
 

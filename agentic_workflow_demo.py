@@ -18,9 +18,9 @@ def load_hf_model():
 hf_model = load_hf_model()
 
 # Load Supabase credentials from Streamlit secrets
-supabase_url = st.secrets["supabase_url"]
-supabase_key = st.secrets["supabase_key"]
-supabase = create_client(supabase_url, supabase_key)
+supabase_url = st.secrets["SUPABASE_URL"]
+supabase_key = st.secrets["SUPABASE_KEY"]
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Toggle AI model source
 USE_HF = st.sidebar.toggle("Use Hugging Face AI", value=True)

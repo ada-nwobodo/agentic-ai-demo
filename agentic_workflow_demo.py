@@ -56,7 +56,7 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
         "ai_output": ai_output,
         "timestamp_start": last_start_time.isoformat(),
         "timestamp_end": now.isoformat(),
-        "duration_sec": duration,
+        "duration_sec": int(duration),
         "button_clicked": button_clicked,
         "completed": completed,
         "last_info_received_prior_to_abandonment": ai_output if not completed else None

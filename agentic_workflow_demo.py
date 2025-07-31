@@ -168,6 +168,12 @@ elif stage == 4:
             log_to_supabase(4, "Stop", "User stopped after failure", "Stop workflow", completed=False)
             st.stop()
 
+except Exception as e:
+        st.error(f"❌ Error in Step 4: {e}")
+        import traceback
+        st.text(traceback.format_exc())
+        st.stop()  # Halt execution so I can see the error
+
 # STAGE 5: Attach and submit?
 elif stage == 5:
     st.subheader("Step 5: Submit Documentation")

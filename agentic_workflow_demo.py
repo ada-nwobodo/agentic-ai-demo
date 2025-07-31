@@ -71,7 +71,7 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
         response = supabase.table("user_events").insert(data).execute()
         st.write("Supabase response:", response)
         if response.status_code != 201:
-        st.error(f"Insert failed: {response.error}")
+            st.error(f"Insert failed: {response.error}")
     except Exception as e:
         st.error(f"Exception during insert: {e}")
 

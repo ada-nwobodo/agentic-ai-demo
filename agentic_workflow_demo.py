@@ -66,7 +66,15 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     st.write("Data to insert:", data)
 
     #Insert into Supabase
-    supabase.table("user_events").insert(data).execute()
+    #try-except block added to catch and show detailed errors 
+    try:
+    response = supabase.table("user_events").insert(data).execute()
+    st.write("Supabase response:", response)
+    if response.status_code != 201:
+        st.error(f"Insert failed: {response.error}")
+    except Exception as e:
+    st.error(f"Exception during insert: {e}")
+
     st.session_state.stage_start_time = now
     st.session_state.last_activity_time = now
 

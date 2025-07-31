@@ -6,6 +6,14 @@ from datetime import datetime
 from transformers import pipeline
 from supabase import create_client
 
+# Generate or retrieve session UUID early in the app
+def get_session_uuid():
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
+    return st.session_state.session_id
+
+session_id = get_session_uuid()
+
 # --------------------
 # SETUP
 # --------------------

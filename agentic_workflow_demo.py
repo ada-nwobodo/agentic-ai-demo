@@ -150,6 +150,8 @@ elif stage == 3:
 # STAGE 4: Agent retrieves guidelines
 elif stage == 4:
     st.subheader("Step 4: Retrieving Guidelines")
+
+try:
     success = maybe_fail()
 
     if success:

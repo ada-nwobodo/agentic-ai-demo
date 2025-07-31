@@ -151,26 +151,26 @@ elif stage == 3:
 elif stage == 4:
     st.subheader("Step 4: Retrieving Guidelines")
 
-try:
-    success = maybe_fail()
+    try:
+        success = maybe_fail()
 
-    if success:
-        guidelines = generate_response("Provide imaging guidelines based on patient symptoms.")
-        st.session_state.inputs["guidelines"] = guidelines
-        log_to_supabase(4, "Request guidelines", guidelines, "Fetch guidelines")
-        st.success("Guidelines retrieved.")
-        st.session_state.stage = 5
-        st.rerun()
-    else:
-        st.error("⚠️ Failed to retrieve guidelines.")
-        if st.button("Retry"):
-            log_to_supabase(4, "Retry", "", "Retry")
+        if success:
+            guidelines = generate_response("Provide imaging guidelines based on patient symptoms.")
+            st.session_state.inputs["guidelines"] = guidelines
+            log_to_supabase(4, "Request guidelines", guidelines, "Fetch guidelines")
+            st.success("Guidelines retrieved.")
+            st.session_state.stage = 5
             st.rerun()
-        elif st.button("Stop workflow"):
-            log_to_supabase(4, "Stop", "User stopped after failure", "Stop workflow", completed=False)
-            st.stop()
+        else:
+            st.error("⚠️ Failed to retrieve guidelines.")
+            if st.button("Retry"):
+                log_to_supabase(4, "Retry", "", "Retry")
+                st.rerun()
+            elif st.button("Stop workflow"):
+                log_to_supabase(4, "Stop", "User stopped after failure", "Stop workflow", completed=False)
+                st.stop()
 
-except Exception as e:
+    except Exception as e:
         st.error(f"❌ Error in Step 4: {e}")
         import traceback
         st.text(traceback.format_exc())

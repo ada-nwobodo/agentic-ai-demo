@@ -70,8 +70,9 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
-    # ✅ Debug line – to print to the Streamlit app
-    st.write("Data to insert:", data)
+    # ✅ Debug print for Supabase insert – to print to the Streamlit app
+    st.markdown("#### 🔎 Attempting Supabase Insert")
+    st.json(data)
 
     
     #try-except block added to catch and show detailed errors 

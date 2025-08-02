@@ -84,6 +84,19 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     except Exception as e:
         st.error(f"Exception during insert: {e}")
 
+        #Debug Code added to show exactly what role Supabase thinks i am using during the session
+if st.button("Test minimal insert"):
+    try:
+        role_check = supabase.rpc("get_current_user_role").execute()
+        st.write("Current DB role:", role_check.data)
+
+        # Debug: Trying a Blank insert (will only work if RLS + defaults are correct)
+        response = supabase.table("user_events").insert({}).execute()
+        st.write("Insert result:", response)
+    except Exception as e:
+        st.error(f"Exception during test insert: {e}")
+
+
     #Insert into Supabase
     st.session_state.stage_start_time = now
     st.session_state.last_activity_time = now

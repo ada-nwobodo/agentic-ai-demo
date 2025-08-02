@@ -251,3 +251,35 @@ Code: SNOMED-CT: 12345678
 # Optional: View raw log in UI
 with st.expander("📊 Interaction Log"):
     st.json({"session_id": st.session_state.session_id, "log": st.session_state.inputs})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import uuid
+
+st.markdown("## 🔍 Test Minimal Insert (Debugging Only)")
+
+if st.button("Run Minimal Insert Test"):
+    try:
+        test_data = {
+            "session_id": str(uuid.uuid4()),  # required column with fallback
+        }
+        response = supabase.table("user_events").insert(test_data).execute()
+        st.write("✅ Test insert result:", response)
+        st.write("📄 Returned data:", response.data)
+        st.write("❌ Error (if any):", response.error)
+
+    except Exception as e:
+        st.error(f"Test insert exception: {e}")
+

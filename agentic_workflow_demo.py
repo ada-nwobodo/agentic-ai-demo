@@ -70,8 +70,6 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
-    # REMOVED last column for testing
-    data.pop("last_info_received_prior_to_abandonment", None)
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app
     st.markdown("#### 🔎 Attempting Supabase Insert")
@@ -87,17 +85,28 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     except Exception as e:
         st.error(f"Exception during insert: {e}")
 
-        #Debug Code added to show exactly what role Supabase thinks i am using during the session
-if st.button("Test minimal insert"):
+    #try-except block to test if anon role and RLS policy allowing an insert using session_id 
+    if st.button("Test insert with session_id only"):
     try:
-        role_check = supabase.rpc("get_current_user_role").execute()
-        st.write("Current DB role:", role_check.data)
-
-        # Debug: Trying a Blank insert (will only work if RLS + defaults are correct)
-        response = supabase.table("user_events").insert({}).execute()
+        response = supabase.table("user_events").insert({
+            "session_id": str(uuid.uuid4())
+        }).execute()
         st.write("Insert result:", response)
     except Exception as e:
-        st.error(f"Exception during test insert: {e}")
+        st.error(f"Exception during insert: {e}")
+
+
+        #Debug Code added to show exactly what role Supabase thinks i am using during the session
+#if st.button("Test minimal insert"):
+    #try:
+        #role_check = supabase.rpc("get_current_user_role").execute()
+        #st.write("Current DB role:", role_check.data)
+
+        # Debug: Trying a Blank insert (will only work if RLS + defaults are correct)
+        #response = supabase.table("user_events").insert({}).execute()
+        #st.write("Insert result:", response)
+    #except Exception as e:
+        #st.error(f"Exception during test insert: {e}")
 
 
     #Insert into Supabase

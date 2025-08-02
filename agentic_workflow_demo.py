@@ -87,13 +87,13 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
 
     #try-except block to test if anon role and RLS policy allowing an insert using session_id 
     if st.button("Test insert with session_id only"):
-    try:
-        response = supabase.table("user_events").insert({
+        try:
+            response = supabase.table("user_events").insert({
             "session_id": str(uuid.uuid4())
-        }).execute()
-        st.write("Insert result:", response)
-    except Exception as e:
-        st.error(f"Exception during insert: {e}")
+            }).execute()
+            st.write("Insert result:", response)
+        except Exception as e:
+            st.error(f"Exception during insert: {e}")
 
 
         #Debug Code added to show exactly what role Supabase thinks i am using during the session

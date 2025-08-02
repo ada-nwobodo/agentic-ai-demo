@@ -30,6 +30,10 @@ supabase_url = st.secrets["SUPABASE_URL"]
 supabase_key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(supabase_url, supabase_key)
 
+# Checking for the DB role
+role_check = supabase.rpc("get_current_user_role").execute()
+st.write("🔍 Current DB role:", role_check.data)
+
 # Toggle AI model source
 USE_HF = st.sidebar.toggle("Use Hugging Face AI", value=True)
 st.sidebar.markdown("Model: `t5-small`")

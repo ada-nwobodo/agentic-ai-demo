@@ -74,7 +74,7 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
         "timestamp_end": now.isoformat(),
         "duration_sec": int(duration),
         "abandoned_at_stage": stage if not completed else None,
-        "search_frequency": st.session_state.get("search_frequency", 0)
+        "search_frequency": st.session_state.get("search_frequency", 0),
         "button_clicked": button_clicked,
         "completed": completed,
         "last_info_received_prior_to_abandonment": ai_output if not completed else None

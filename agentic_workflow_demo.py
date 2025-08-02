@@ -3,7 +3,7 @@ import random
 import time
 import uuid
 from datetime import datetime
-from transformers import pipeline
+#from transformers import pipeline
 from supabase import create_client
 
 # Generate or retrieve session UUID early in the app

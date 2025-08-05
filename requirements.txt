@@ -4,7 +4,8 @@ google-generativeai
 google-cloud-aiplatform
 langchain-google-vertexai
 langchain
-transformers
+transformers==4.40.1
 torch
 accelerate
 supabase
+python-dotenv

@@ -116,6 +116,7 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     
     #try-except block added to catch and show detailed errors 
     try:
+        st.write("🔍 Final data payload before insert:", data)
         response = supabase.table("user_events").insert(data).execute()
         st.write("📤 Full Supabase insert response:", response)
         st.write("✅ Status code:", response.status_code)

@@ -45,12 +45,12 @@ if st.button("Test insert with stage_number only"):
 
 
 # Checking for the DB role
-try:
-    role_check = supabase.rpc("get_current_user_role").execute()
-    st.write("Raw RPC response:", role_check)
-    st.write("🔍 Current DB role:", role_check.data)
-except Exception as e:
-    st.error(f"Exception when calling get_current_user_role: {e}")
+#try:
+#    role_check = supabase.rpc("get_current_user_role").execute()
+#    st.write("Raw RPC response:", role_check)
+#    st.write("🔍 Current DB role:", role_check.data)
+#except Exception as e:
+#    st.error(f"Exception when calling get_current_user_role: {e}")
 
 # Toggle AI model source
 USE_HF = st.sidebar.toggle("Use Hugging Face AI", value=True)

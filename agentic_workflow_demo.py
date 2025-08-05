@@ -103,7 +103,7 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     if st.button("Test insert with stage_number only"):
         try:
             response = supabase.table("user_events").insert({
-            "stage_number": 1
+                "stage_number": 1
             }).execute()
             st.write("Insert result:", response)
         except Exception as e:

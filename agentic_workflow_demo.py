@@ -31,6 +31,20 @@ supabase_url = st.secrets["SUPABASE_URL"]
 supabase_key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(supabase_url, supabase_key)
 
+#Test Insert
+if st.button("🚀 Test insert"):
+    try:
+        test_data = {
+            "session_id": str(uuid.uuid4()),  # Required field
+            "stage_number": 1
+        }
+        response = supabase.table("user_events").insert(test_data).execute()
+        st.write("✅ Raw Response:", response)
+        st.write("Data:", getattr(response, "data", None))
+        st.write("Error:", getattr(response, "error", None))
+    except Exception as e:
+        st.error(f"❌ Exception during insert: {e}")
+
 # ✅ Test insert block for stage_number
 #st.markdown("## 🧪 Test: Insert with stage_number only")
 

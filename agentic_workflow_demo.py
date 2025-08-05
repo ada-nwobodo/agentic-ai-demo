@@ -88,20 +88,26 @@ if "last_activity_time" not in st.session_state:
 stage = st.session_state.stage
 
 # Supabase logging function
-def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=False):
+def log_to_supabase(stage_number, user_input, ai_output, button_clicked, completed=False):
     now = datetime.utcnow()
     last_start_time = st.session_state.get("stage_start_time", now)
     duration = (now - last_start_time).total_seconds()
 
+    #Ensure sesion_id is present and valid
+    session_id = st.session_state.get("session_id")
+    if_not session_id:
+        session_id = str(uuid.uuid4())
+        st.session_state.session_id = session_id
+
     data = {
-        "session_id": st.session_state.session_id,
-        "stage_number": stage,
+        "session_id": session_id,
+        "stage_number": stage_number,
         "user_input": user_input,
         "ai_output": ai_output,
         "timestamp_start": last_start_time.isoformat(),
         "timestamp_end": now.isoformat(),
         "duration_sec": int(duration),
-        "abandoned_at_stage": stage if not completed else None,
+        "abandoned_at_stage": stage_number if not completed else None,
         "search_frequency": st.session_state.get("search_frequency", 0),
         "button_clicked": button_clicked,
         "completed": completed,
@@ -110,21 +116,22 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
 
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app
-    st.markdown("#### 🔎 Attempting Supabase Insert")
-    st.json(data)
+    st.markdown("#### 🔎 Supabase Insert Debug")
+    st.write("📦 Insert Payload:", data)
+    st.write("🔐 session_id value:", session_id)
+    st.write("🔐 session_id type:", type(session_id))
 
     
     #try-except block added to catch and show detailed errors 
     try:
-        st.write("🔍 Final data payload before insert:", data)
         response = supabase.table("user_events").insert(data).execute()
-        st.write("📤 Full Supabase insert response:", response)
+        st.write("📤 Insert response:", response)
         st.write("✅ Status code:", response.status_code)
         st.write("📄 Returned data:", response.data)
         st.write("❌ Error (if any):", response.error)
 
         if response.status_code != 201:
-            st.error("Insert failed. Check response.error above for details.")
+            st.error("Insert failed. Check above error above for details.")
     except Exception as e:
         st.error(f"Exception during insert: {e}")
 

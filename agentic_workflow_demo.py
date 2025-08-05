@@ -6,17 +6,6 @@ from datetime import datetime
 from transformers import pipeline
 from supabase import create_client
 
-# ✅ Test insert block for stage_number
-st.markdown("## 🧪 Test: Insert with stage_number only")
-
-if st.button("Test insert with stage_number only"):
-    try:
-        response = supabase.table("user_events").insert({
-            "stage_number": 1  # minimal insert test
-        }).execute()
-        st.write("Insert result:", response)
-    except Exception as e:
-        st.error(f"Exception during insert: {e}")
 
 # Generate or retrieve session UUID early in the app
 def get_session_uuid():
@@ -41,6 +30,19 @@ hf_model = load_hf_model()
 supabase_url = st.secrets["SUPABASE_URL"]
 supabase_key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(supabase_url, supabase_key)
+
+# ✅ Test insert block for stage_number
+st.markdown("## 🧪 Test: Insert with stage_number only")
+
+if st.button("Test insert with stage_number only"):
+    try:
+        response = supabase.table("user_events").insert({
+            "stage_number": 1  # minimal insert test
+        }).execute()
+        st.write("Insert result:", response)
+    except Exception as e:
+        st.error(f"Exception during insert: {e}")
+
 
 # Checking for the DB role
 try:

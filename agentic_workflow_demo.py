@@ -95,7 +95,7 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
 
     #Ensure sesion_id is present and valid
     session_id = st.session_state.get("session_id")
-    if_not session_id:
+    if not session_id:
         session_id = str(uuid.uuid4())
         st.session_state.session_id = session_id
 

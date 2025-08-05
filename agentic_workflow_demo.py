@@ -99,11 +99,11 @@ def log_to_supabase(stage, user_input, ai_output, button_clicked, completed=Fals
     except Exception as e:
         st.error(f"Exception during insert: {e}")
 
-    #try-except block to test if anon role and RLS policy allowing an insert using session_id 
-    if st.button("Test insert with session_id only"):
+    #try-except block to test if anon role and RLS policy allowing an insert using stage_number 
+    if st.button("Test insert with stage_number only"):
         try:
             response = supabase.table("user_events").insert({
-            "session_id": str(uuid.uuid4())
+            "stage_number": 1
             }).execute()
             st.write("Insert result:", response)
         except Exception as e:

@@ -100,7 +100,7 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         st.session_state.session_id = session_id
 
     data = {
-        "session_id": session_id,
+        "session_id": str(session_id),
         "stage_number": stage_number,
         "user_input": user_input,
         "ai_output": ai_output,
@@ -119,7 +119,7 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
     st.markdown("#### 🔎 Supabase Insert Debug")
     st.write("📦 Insert Payload:", data)
     st.write("🔐 session_id value:", session_id)
-    st.write("🔐 session_id type:", type(session_id))
+    st.write("🔐 type(session_id):", type(session_id))
 
     
     #try-except block added to catch and show detailed errors 

@@ -6,6 +6,18 @@ from datetime import datetime
 from transformers import pipeline
 from supabase import create_client
 
+# ✅ Test insert block for stage_number
+st.markdown("## 🧪 Test: Insert with stage_number only")
+
+if st.button("Test insert with stage_number only"):
+    try:
+        response = supabase.table("user_events").insert({
+            "stage_number": 1  # minimal insert test
+        }).execute()
+        st.write("Insert result:", response)
+    except Exception as e:
+        st.error(f"Exception during insert: {e}")
+
 # Generate or retrieve session UUID early in the app
 def get_session_uuid():
     if "session_id" not in st.session_state:

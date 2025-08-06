@@ -114,6 +114,9 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
+    res = supabase.table("user_events").insert(data).execute()
+    print(res)
+
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app
     st.markdown("#### 🔎 Supabase Insert Debug")

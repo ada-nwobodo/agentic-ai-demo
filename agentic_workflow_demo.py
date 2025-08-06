@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from transformers import pipeline
 from supabase import create_client
+import json
 
 
 # Generate or retrieve session UUID early in the app
@@ -115,18 +116,16 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
-    import pprint
-
-    print("🟡 Data being sent to Supabase:")
-    pprint.pprint(data)
+    st.subheader("🟡 Data being sent to Supabase:")
+    st.code(json.dumps(data, indent=2), language="json")
 
     try:
         res = supabase.table("user_events").insert(data).execute()
-        print("✅ Insert successful")
-        pprint.pprint(res)
+        st.success("✅ Insert successful")
+        st.code(str(res))
     except Exception as e:
-        print("❌ Insert failed")
-        print("Error:", e)
+        st.error("❌ Insert failed")
+        st.code(str(e))
 
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app

@@ -6,6 +6,7 @@ from datetime import datetime
 from transformers import pipeline
 from supabase import create_client
 import json
+import traceback
 
 
 # Generate or retrieve session UUID early in the app
@@ -126,6 +127,8 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
     except Exception as e:
         st.error("❌ Insert failed")
         st.code(str(e))
+        st.subheader("🔍 Full Traceback:")
+        st.code(traceback.format_exc())
 
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app

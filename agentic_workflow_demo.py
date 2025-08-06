@@ -99,6 +99,7 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         session_id = str(uuid.uuid4())
         st.session_state.session_id = session_id
 
+    session_id = uuid.uuid4()
     data = {
         "session_id": str(session_id),
         "stage_number": stage_number,

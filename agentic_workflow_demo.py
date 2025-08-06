@@ -102,11 +102,31 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
     session_id = uuid.uuid4()
     data = {
         "session_id": str(session_id),
-        
+        "stage_number": stage_number,
+        "user_input": user_input,
+        "ai_output": ai_output,
+        "timestamp_start": last_start_time.isoformat(),
+        "timestamp_end": now.isoformat(),
+        "duration_sec": int(duration),
+        "abandoned_at_stage": stage_number if not completed else None,
+        "search_frequency": st.session_state.get("search_frequency", 0),
+        "button_clicked": button_clicked,
+        "completed": completed,
+        "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
-    res = supabase.table("user_events").insert(data).execute()
-    print(res)
+    import pprint
+
+    print("🟡 Data being sent to Supabase:")
+    pprint.pprint(data)
+
+    try:
+        res = supabase.table("user_events").insert(data).execute()
+        print("✅ Insert successful")
+        pprint.pprint(res)
+    except Exception as e:
+        print("❌ Insert failed")
+        print("Error:", e)
 
 
     # ✅ Debug print for Supabase insert – to print to the Streamlit app

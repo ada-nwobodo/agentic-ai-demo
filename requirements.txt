@@ -7,6 +7,6 @@ langchain
 transformers==4.40.1
 torch
 accelerate
-supabase
+supabase==1.2.0
 python-dotenv
 httpx==0.27.0

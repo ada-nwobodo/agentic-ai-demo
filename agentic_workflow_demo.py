@@ -7,6 +7,7 @@ from transformers import pipeline
 from supabase import create_client
 import json
 import traceback
+import httpx
 
 
 # Generate or retrieve session UUID early in the app
@@ -28,10 +29,23 @@ def load_hf_model():
 
 hf_model = load_hf_model()
 
-# Load Supabase credentials from Streamlit secrets
-supabase_url = st.secrets["SUPABASE_URL"]
-supabase_key = st.secrets["SUPABASE_KEY"]
-supabase = create_client(supabase_url, supabase_key)
+
+#Manually setting headers to ensure Supabase sees the correct role
+headers = {
+    "apikey": st.secrets["SUPABASE_KEY"],
+    "Authorization": f"Bearer {st.secrets['SUPABASE_KEY']}",
+}
+
+#Creating a custom HTTP client with the headers
+client = httpx.Client(headers=headers)
+
+#Passing this client into Supabase
+supabase: Client = create_client(
+    st.secrets["SUPABASE_URL"],
+    st.secrets["SUPABASE_KEY"],
+    http_client=client
+)
+
 
 #Test Insert
 if st.button("🚀 Test insert"):

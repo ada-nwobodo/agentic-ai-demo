@@ -1,12 +1,6 @@
 streamlit==1.35.0
 pandas
-google-generativeai
-google-cloud-aiplatform
-langchain-google-vertexai
-langchain
 transformers==4.40.1
-torch
-accelerate
 supabase==1.2.0
 python-dotenv==1.0.1
 httpx==0.27.0

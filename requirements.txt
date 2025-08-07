@@ -9,3 +9,4 @@ torch
 accelerate
 supabase
 python-dotenv
+httpx==0.27.0

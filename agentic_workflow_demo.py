@@ -7,20 +7,20 @@ from transformers import pipeline
 from supabase import create_client
 import json
 import traceback
-import httpx
 
 
-# Generate or retrieve session UUID early in the app
-def get_session_uuid():
-    if "session_id" not in st.session_state:
-        st.session_state.session_id = str(uuid.uuid4())
-    return st.session_state.session_id
 
-session_id = get_session_uuid()
 
 # --------------------
 # SETUP
 # --------------------
+
+
+# Create Supabase client
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 # Load Hugging Face model
 @st.cache_resource
@@ -29,58 +29,6 @@ def load_hf_model():
 
 hf_model = load_hf_model()
 
-
-#Manually setting headers to ensure Supabase sees the correct role
-headers = {
-    "apikey": st.secrets["SUPABASE_KEY"],
-    "Authorization": f"Bearer {st.secrets['SUPABASE_KEY']}",
-}
-
-#Creating a custom HTTP client with the headers
-client = httpx.Client(headers=headers)
-
-#Passing this client into Supabase
-supabase: Client = create_client(
-    st.secrets["SUPABASE_URL"],
-    st.secrets["SUPABASE_KEY"],
-    http_client=client
-)
-
-
-#Test Insert
-if st.button("🚀 Test insert"):
-    try:
-        test_data = {
-            "session_id": str(uuid.uuid4()),  # Required field
-            "stage_number": 1
-        }
-        response = supabase.table("user_events").insert(test_data).execute()
-        st.write("✅ Raw Response:", response)
-        st.write("Data:", getattr(response, "data", None))
-        st.write("Error:", getattr(response, "error", None))
-    except Exception as e:
-        st.error(f"❌ Exception during insert: {e}")
-
-# ✅ Test insert block for stage_number
-#st.markdown("## 🧪 Test: Insert with stage_number only")
-
-#if st.button("Test insert with stage_number only"):
-#    try:
-#        response = supabase.table("user_events").insert({
-#            "stage_number": 1  # minimal insert test
-#        }).execute()
-#        st.write("Insert result:", response)
-#    except Exception as e:
-#        st.error(f"Exception during insert: {e}")
-
-
-# Checking for the DB role
-#try:
-#    role_check = supabase.rpc("get_current_user_role").execute()
-#    st.write("Raw RPC response:", role_check)
-#    st.write("🔍 Current DB role:", role_check.data)
-#except Exception as e:
-#    st.error(f"Exception when calling get_current_user_role: {e}")
 
 # Toggle AI model source
 USE_HF = st.sidebar.toggle("Use Hugging Face AI", value=True)
@@ -100,24 +48,44 @@ if "stage_start_time" not in st.session_state:
     st.session_state.stage_start_time = datetime.utcnow()
 if "last_activity_time" not in st.session_state:
     st.session_state.last_activity_time = datetime.utcnow()
+if "supabase_user" in st.session_state:
+    supabase.auth.set_session(st.session_state["supabase_user"]["session"])
 
 stage = st.session_state.stage
 
-# Supabase logging function
+
+# --------------------
+# AUTH
+# --------------------
+
+st.sidebar.header("🔐 Login")
+
+email = st.sidebar.text_input("Email")
+password = st.sidebar.text_input("Password", type="password")
+
+if st.sidebar.button("Sign In"):
+    try:
+        user = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        st.session_state["supabase_user"] = user
+        supabase.auth.set_session(user.session)
+        st.session_state["logged_in"] = True
+        st.sidebar.success(f"Logged in as: {user.user.email}")
+    except Exception as e:
+        st.sidebar.error(f"Login failed: {e}")
+        
+
+# --------------------
+# LOGGING FUNCTION
+# --------------------
+
+#Supabase Logging Function
 def log_to_supabase(stage_number, user_input, ai_output, button_clicked, completed=False):
     now = datetime.utcnow()
     last_start_time = st.session_state.get("stage_start_time", now)
     duration = (now - last_start_time).total_seconds()
 
-    #Ensure sesion_id is present and valid
-    session_id = st.session_state.get("session_id")
-    if not session_id:
-        session_id = str(uuid.uuid4())
-        st.session_state.session_id = session_id
-
-    session_id = uuid.uuid4()
     data = {
-        "session_id": str(session_id),
+        "session_id": st.session_state.session_id,
         "stage_number": stage_number,
         "user_input": user_input,
         "ai_output": ai_output,
@@ -131,87 +99,50 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
-    st.subheader("🟡 Data being sent to Supabase:")
-    st.code(json.dumps(data, indent=2), language="json")
-
-    try:
-        res = supabase.table("user_events").insert(data).execute()
-        st.success("✅ Insert successful")
-        st.code(str(res))
-    except Exception as e:
-        st.error("❌ Insert failed")
-        st.code(str(e))
-        st.subheader("🔍 Full Traceback:")
-        st.code(traceback.format_exc())
-
-
-    # ✅ Debug print for Supabase insert – to print to the Streamlit app
-    st.markdown("#### 🔎 Supabase Insert Debug")
-    st.write("📦 Insert Payload:", data)
-    st.write("🔐 session_id value:", session_id)
-    st.write("🔐 type(session_id):", type(session_id))
-
-    
-    #try-except block added to catch and show detailed errors 
     try:
         response = supabase.table("user_events").insert(data).execute()
-        st.write("📤 Insert response:", response)
-        st.write("✅ Status code:", response.status_code)
-        st.write("📄 Returned data:", response.data)
-        st.write("❌ Error (if any):", response.error)
 
         if response.status_code != 201:
             st.error("Insert failed. Check above error above for details.")
+            st.code(response.error)
+        else:
+            st.success("✅ Logged to Supabase")
+            st.code(response.data)
+
     except Exception as e:
-        st.error(f"Exception during insert: {e}")
+        st.error("❌ Failed to insert into Supabase")
+        st.code(str(e))
+        st.code(traceback.format_exc())
 
-    #try-except block to test if anon role and RLS policy allowing an insert using stage_number 
-    if st.button("Test insert with stage_number only"):
-        try:
-            response = supabase.table("user_events").insert({
-                "stage_number": 1
-            }).execute()
-            st.write("Insert result:", response)
-        except Exception as e:
-            st.error(f"Exception during insert: {e}")
-
-
-        #Debug Code added to show exactly what role Supabase thinks i am using during the session
-#if st.button("Test minimal insert"):
-    #try:
-        #role_check = supabase.rpc("get_current_user_role").execute()
-        #st.write("Current DB role:", role_check.data)
-
-        # Debug: Trying a Blank insert (will only work if RLS + defaults are correct)
-        #response = supabase.table("user_events").insert({}).execute()
-        #st.write("Insert result:", response)
-    #except Exception as e:
-        #st.error(f"Exception during test insert: {e}")
-
-
-    #Insert into Supabase
+    # Always update activity timestamps
     st.session_state.stage_start_time = now
     st.session_state.last_activity_time = now
 
-# AI generation function
+
+
+
+# --------------------
+# AI
+# --------------------
+
 def generate_response(prompt):
-    if not USE_HF:
-        return f"[Mock AI] Response for: {prompt}"
     try:
-        response = hf_model(prompt, max_length=200, do_sample=False)
-        return response[0]["generated_text"]
+        result = hf_model(prompt, max_length=200, do_sample=False)
+        return result[0]["generated_text"]
     except Exception as e:
-        return f"[AI Error] {str(e)}"
+        return f"[AI Error] {e}"
 
 # Simulate random failure
 def maybe_fail():
     return random.choice([True, False]) if st.session_state.simulate_failure else True
 
 # --------------------
-# UI
+# UI & STAGES
 # --------------------
 
 st.title("🧠 Agentic AI Workflow Demo")
+
+stage = st.session_state.stage
 
 # STAGE 1: Clinician enters patient notes 
 if stage == 1:
@@ -241,7 +172,7 @@ elif stage == 2:
 
 # STAGE 3: Prompt to attach guidelines
 elif stage == 3:
-    st.subheader("Step 3: Attach Guidelines?")
+    st.subheader("Step 3: Fetch Guidelines?")
     st.markdown("Would you like the agent to fetch relevant imaging guidelines?")
 
     if st.button("Yes, fetch guidelines"):
@@ -260,7 +191,7 @@ elif stage == 4:
     try:
         success = maybe_fail()
 
-        if success:
+         if success:
             guidelines = generate_response("Provide imaging guidelines based on patient symptoms.")
             st.session_state.inputs["guidelines"] = guidelines
             log_to_supabase(4, "Request guidelines", guidelines, "Fetch guidelines")
@@ -288,7 +219,7 @@ elif stage == 5:
     st.markdown("Ready to submit this case.")
 
     if st.button("Submit Case"):
-        log_to_supabase(5, "Submit", "", "Submit Case")
+        log_to_supabase(5, "Submit", "", "Submit Case", completed = True)
         st.session_state.stage = 6
         st.rerun()
 

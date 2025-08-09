@@ -264,7 +264,7 @@ with st.expander("📊 Interaction Log"):
 
 # 🔍 Debug: Check DB Role
 if st.button("Check DB Role"):
-    info = supabase.rpc("whoami").execute()
+    info = supabase.rpc("whoami", params={}).execute()
     st.write("DB sees:", getattr(info, "data", None))
 
 

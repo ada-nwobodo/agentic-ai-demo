@@ -275,12 +275,14 @@ st.markdown("## 🔍 Test Minimal Insert (Debugging Only)")
 if st.button("Run Minimal Insert Test"):
     try:
         test_data = {
-            "session_id": str(uuid.uuid4()),  # required column with fallback
+            "session_id": str(uuid.uuid4()),# required column with fallback
+            "stage_number": 99, 
         }
         response = supabase.table("user_events").insert(test_data).execute()
-        st.write("✅ Test insert result:", response)
-        st.write("📄 Returned data:", response.data)
-        st.write("❌ Error (if any):", response.error)
+        st.write("✅ Raw response object:", response)
+        st.write("📄 Status code:", getattr(response, "status_code", None))
+        st.write("Data:", getattr(response, "data", None))
+        st.write("❌ Error:", getattr(response, "error", None))
 
     except Exception as e:
         st.error(f"Test insert exception: {e}")

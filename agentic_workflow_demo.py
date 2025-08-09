@@ -122,7 +122,7 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         rows = getattr(response, "data", None)
 
         if err:
-            st.error(Insert failed")
+            st.error("Insert failed")
             st.code(str(err))
         else:
             st.success("✅ Logged to Supabase")

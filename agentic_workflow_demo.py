@@ -190,8 +190,7 @@ elif stage == 4:
 
     try:
         success = maybe_fail()
-
-         if success:
+        if success:
             guidelines = generate_response("Provide imaging guidelines based on patient symptoms.")
             st.session_state.inputs["guidelines"] = guidelines
             log_to_supabase(4, "Request guidelines", guidelines, "Fetch guidelines")

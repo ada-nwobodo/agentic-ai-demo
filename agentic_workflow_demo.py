@@ -19,6 +19,10 @@ import traceback
 # Create Supabase client
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
+#Debug to confirm which project the app is talking to 
+st.write("Supabase URL in use:", SUPABASE_URL)
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 

@@ -109,6 +109,10 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
         "last_info_received_prior_to_abandonment": ai_output if not completed else None
     }
 
+    # Show debug payload
+    st.subheader("🟡 Data being sent to Supabase:")
+    st.code(json.dumps(data, indent=2), language="json")
+    
     try:
         payload = data
         response = supabase.table("user_events").insert(payload).execute()

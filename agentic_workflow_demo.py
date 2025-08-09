@@ -21,10 +21,6 @@ SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ✅ Re-apply JWT on rerun if we have a session
-if "supabase_session" in st.session_state and st.session_state["supabase_session"]:
-    supabase.postgrest.auth(st.session_state["supabase_session"].access_token)
-
 
 # Load Hugging Face model
 @st.cache_resource
@@ -77,9 +73,6 @@ if st.sidebar.button("Sign In"):
             # Persist session across Streamlit reruns
             st.session_state["supabase_session"] = auth_res.session
             st.session_state["logged_in"] = True
-
-            # Tell PostgREST to use the user JWT for RLS
-            supabase.postgrest.auth(auth_res.session.access_token)
 
             st.sidebar.success(f"Logged in as: {auth_res.user.email}")
     except Exception as e:

@@ -262,6 +262,11 @@ Code: SNOMED-CT: 12345678
 with st.expander("📊 Interaction Log"):
     st.json({"session_id": st.session_state.session_id, "log": st.session_state.inputs})
 
+# 🔍 Debug: Check DB Role
+if st.button("Check DB Role"):
+    info = supabase.rpc("whoami").execute()
+    st.write("DB sees:", getattr(info, "data", None))
+
 
 
 

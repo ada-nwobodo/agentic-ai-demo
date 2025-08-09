@@ -110,18 +110,19 @@ def log_to_supabase(stage_number, user_input, ai_output, button_clicked, complet
     }
 
     try:
-        response = supabase.table("user_events").insert(data).execute()
+        payload = data
+        response = supabase.table("user_events").insert(payload).execute()
 
         # Cross-version safe checks
         err = getattr(response, "error", None)
-        returned = getattr(response, "data", None)
+        rows = getattr(response, "data", None)
 
         if err:
-            st.error(f"Insert failed: {err}")
+            st.error(Insert failed")
             st.code(str(err))
         else:
             st.success("✅ Logged to Supabase")
-            st.write("Returned data:", returned)
+            st.write("Returned data:", rows)
 
     except Exception as e:
         st.error("❌ Failed to insert into Supabase")

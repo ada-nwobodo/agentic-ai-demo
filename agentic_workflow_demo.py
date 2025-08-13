@@ -20,9 +20,6 @@ import traceback
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
-#Debug to confirm which project the app is talking to 
-st.write("Supabase URL in use:", SUPABASE_URL)
-
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
@@ -58,32 +55,7 @@ if "supabase_user" in st.session_state:
 stage = st.session_state.stage
 
 
-# --------------------
-# AUTH
-# --------------------
-st.sidebar.header("🔐 Login")
-
-email = st.sidebar.text_input("Email")
-password = st.sidebar.text_input("Password", type="password")
-
-if st.sidebar.button("Sign In"):
-    try:
-        # Sign in (returns user + session/JWT)
-        auth_res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-
-        if not auth_res or not auth_res.session:
-            st.sidebar.error("Login succeeded but no session was returned.")
-        else:
-            # Persist session across Streamlit reruns
-            st.session_state["supabase_session"] = auth_res.session
-            st.session_state["logged_in"] = True
-
-            st.sidebar.success(f"Logged in as: {auth_res.user.email}")
-    except Exception as e:
-        st.sidebar.error(f"Login failed: {e}")
-
         
-
 # --------------------
 # LOGGING FUNCTION
 # --------------------
